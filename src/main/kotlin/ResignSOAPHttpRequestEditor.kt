@@ -8,10 +8,11 @@ import burp.api.montoya.ui.editor.RawEditor
 import burp.api.montoya.ui.editor.extension.EditorCreationContext
 import burp.api.montoya.ui.editor.extension.EditorMode
 import burp.api.montoya.ui.editor.extension.ExtensionProvidedHttpRequestEditor
+import com.nickcoblentz.montoya.settings.StringExtensionSetting
 import java.awt.Component
 
 
-class ResignSOAPHttpRequestEditor(private val api: MontoyaApi, creationContext: EditorCreationContext?) : ExtensionProvidedHttpRequestEditor {
+class ResignSOAPHttpRequestEditor(private val api: MontoyaApi, creationContext: EditorCreationContext?, var pfxCertificateLocationSetting : StringExtensionSetting, var pfxCertificatePasswordSetting : StringExtensionSetting) : ExtensionProvidedHttpRequestEditor {
     private var editor: RawEditor
     private var data : ByteArray = ByteArray.byteArray("")
     private var httpRequestResponse : HttpRequestResponse? = null
@@ -83,7 +84,7 @@ class ResignSOAPHttpRequestEditor(private val api: MontoyaApi, creationContext: 
         api.logging().logToOutput("get request")
         if (editor.isModified) {
             api.logging().logToOutput("resigning")
-            val newSignedXmlBody = resign(editor.contents.toString())
+            val newSignedXmlBody = resign(editor.contents.toString(),pfxCertificateLocationSetting.currentValue,pfxCertificatePasswordSetting.currentValue)
             api.logging().logToOutput("resigned")
             api.logging().logToOutput(newSignedXmlBody)
             request = httpRequestResponse?.request()?.withBody(newSignedXmlBody)

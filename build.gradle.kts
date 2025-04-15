@@ -10,8 +10,8 @@ plugins {
 }
 
 //Change this to reflect your package namespace
-group = "com.yournamehere.montoya"
-version = "0.1.0"
+group = "com.nickcoblentz.montoya"
+version = "0.1.1"
 
 repositories {
     //add maven local in case you want to build some reusable libraries and host them within your home directory

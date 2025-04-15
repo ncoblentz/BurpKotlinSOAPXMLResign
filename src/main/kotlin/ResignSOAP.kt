@@ -5,6 +5,7 @@ import burp.api.montoya.ui.editor.extension.EditorCreationContext
 import com.nickcoblentz.montoya.settings.*
 import de.milchreis.uibooster.model.Form
 import de.milchreis.uibooster.model.FormBuilder
+import java.io.File
 
 // Montoya API Documentation: https://portswigger.github.io/burp-extensions-montoya-api/javadoc/burp/api/montoya/MontoyaApi.html
 // Montoya Extension Examples: https://github.com/PortSwigger/burp-extensions-montoya-api-examples
@@ -15,7 +16,8 @@ class ResignSOAP : BurpExtension {
 
     // Uncomment this section if you wish to use persistent settings and automatic UI Generation from: https://github.com/ncoblentz/BurpMontoyaLibrary
     // Add one or more persistent settings here
-    // private lateinit var exampleNameSetting : StringExtensionSetting
+    private lateinit var pfxCertificateLocationSetting : StringExtensionSetting
+    private lateinit var pfxCertificatePasswordSetting : StringExtensionSetting
 
 
 
@@ -30,27 +32,39 @@ class ResignSOAP : BurpExtension {
         // This will print to Burp Suite's Extension output and can be used to debug whether the extension loaded properly
         api.logging().logToOutput("Started loading the extension...")
 
-        /* Uncomment this section if you wish to use persistent settings and automatic UI Generation from: https://github.com/ncoblentz/BurpMontoyaLibrary
 
-        exampleNameSetting = StringExtensionSetting(
+
+        pfxCertificateLocationSetting = StringExtensionSetting(
             // pass the montoya API to the setting
             api,
             // Give the setting a name which will show up in the Swing UI Form
-            "My Example Setting Name Here",
+            "PFX Certificate Full Path",
             // Key for where to save this setting in Burp's persistence store
-            "MyPluginName.ExampleSettingNameHere",
+            "ResignSoap.Pfx",
             // Default value within the Swing UI Form
-            "default value here",
+            "${System.getProperty("user.home")}${File.separator}Documents${File.separator}cert.pfx",
             // Whether to save it for this specific "PROJECT" or as a global Burp "PREFERENCE"
             ExtensionSettingSaveLocation.PROJECT
             )
 
+        pfxCertificatePasswordSetting = StringExtensionSetting(
+            // pass the montoya API to the setting
+            api,
+            // Give the setting a name which will show up in the Swing UI Form
+            "Password for the PFX",
+            // Key for where to save this setting in Burp's persistence store
+            "ResignSoap.PfxPassword",
+            // Default value within the Swing UI Form
+            "privatekey",
+            // Whether to save it for this specific "PROJECT" or as a global Burp "PREFERENCE"
+            ExtensionSettingSaveLocation.PROJECT
+        )
 
         // Create a list of all the settings defined above
         // Don't forget to add more settings here if you define them above
-        val extensionSetting = listOf(exampleNameSetting)
+        val extensionSetting = listOf(pfxCertificateLocationSetting,pfxCertificatePasswordSetting)
 
-        val gen = GenericExtensionSettingsFormGenerator(extensionSetting, "Jwt Token Handler")
+        val gen = GenericExtensionSettingsFormGenerator(extensionSetting, "Resign Soap")
         val settingsFormBuilder: FormBuilder = gen.getSettingsFormBuilder()
         val settingsForm: Form = settingsFormBuilder.run()
 
@@ -59,7 +73,7 @@ class ResignSOAP : BurpExtension {
 
         // When we unload this extension, include a callback that closes any Swing UI forms instead of just leaving them still open
         api.extension().registerUnloadingHandler(ExtensionSettingsUnloadHandler(settingsForm))
-        */
+
 
         // Name our extension when it is displayed inside of Burp Suite
         api.extension().setName("Resign SOAP")
@@ -68,7 +82,7 @@ class ResignSOAP : BurpExtension {
 
 
 
-        api.userInterface().registerHttpRequestEditorProvider { creationContext: EditorCreationContext? -> ResignSOAPHttpRequestEditor(api, creationContext) }
+        api.userInterface().registerHttpRequestEditorProvider { creationContext: EditorCreationContext? -> ResignSOAPHttpRequestEditor(api, creationContext, pfxCertificateLocationSetting, pfxCertificatePasswordSetting) }
 
         // Code for setting up your extension ends here
 
